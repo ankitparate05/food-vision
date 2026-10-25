@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install dependencies (CPU PyTorch)
+        run: |
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements-dev.txt
+          pip install -e .
+      - name: Run tests
+        run: pytest -q
+
+  docker:
+    name: Docker build + smoke test
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Create placeholder model artifacts
+        run: |
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          python scripts/make_dummy_artifacts.py artifacts
+      - name: Build image
+        run: docker build -t food-vision:ci .
+      - name: Start container and check endpoints
+        run: |
+          docker run -d --name fv -p 7860:7860 food-vision:ci
+          for i in $(seq 1 30); do curl -sf localhost:7860/health && break; sleep 2; done
+          curl -sf localhost:7860/health
+          python -c "from PIL import Image; Image.new('RGB',(300,200),(200,120,40)).save('t.jpg')"
+          curl -sf -F "file=@t.jpg" localhost:7860/predict | python -c "import sys,json; r=json.load(sys.stdin); assert len(r['predictions'])==3; print('predict OK')"
+      - name: Container logs on failure
+        if: failure()
+        run: docker logs fv
