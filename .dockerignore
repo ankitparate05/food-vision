@@ -1,0 +1,13 @@
+.git
+.github
+notebooks
+reports
+data
+tests
+mlruns
+outputs
+**/__pycache__
+**/*.pyc
+.venv
+venv
+*.zip
