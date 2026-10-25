@@ -1,0 +1,26 @@
+{
+  "_meta": {
+    "note": "Approximate values for one typical serving. Real values vary widely by recipe, oil, and portion size. For display only, not dietary advice.",
+    "fields": "kcal, protein_g, carbs_g, fat_g"
+  },
+  "burger":        {"name": "Burger",        "serving": "1 burger (~150 g)",          "kcal": 300, "protein_g": 15, "carbs_g": 30, "fat_g": 13},
+  "butter_naan":   {"name": "Butter Naan",   "serving": "1 piece (~90 g)",            "kcal": 300, "protein_g": 8,  "carbs_g": 45, "fat_g": 10},
+  "chai":          {"name": "Chai",          "serving": "1 cup (150 ml), milk + sugar","kcal": 90,  "protein_g": 3,  "carbs_g": 13, "fat_g": 3},
+  "chapati":       {"name": "Chapati",       "serving": "1 piece (~40 g)",            "kcal": 120, "protein_g": 3,  "carbs_g": 18, "fat_g": 4},
+  "chole_bhature": {"name": "Chole Bhature", "serving": "2 bhature + chole",          "kcal": 650, "protein_g": 18, "carbs_g": 75, "fat_g": 30},
+  "dal_makhani":   {"name": "Dal Makhani",   "serving": "1 bowl (~200 g)",            "kcal": 330, "protein_g": 12, "carbs_g": 30, "fat_g": 18},
+  "dhokla":        {"name": "Dhokla",        "serving": "4 pieces (~100 g)",          "kcal": 160, "protein_g": 6,  "carbs_g": 25, "fat_g": 4},
+  "fried_rice":    {"name": "Fried Rice",    "serving": "1 plate (~250 g)",           "kcal": 400, "protein_g": 9,  "carbs_g": 60, "fat_g": 13},
+  "idli":          {"name": "Idli",          "serving": "2 idlis (~100 g)",           "kcal": 120, "protein_g": 4,  "carbs_g": 25, "fat_g": 1},
+  "jalebi":        {"name": "Jalebi",        "serving": "~100 g",                     "kcal": 450, "protein_g": 3,  "carbs_g": 70, "fat_g": 18},
+  "kaathi_rolls":  {"name": "Kathi Roll",    "serving": "1 roll",                     "kcal": 400, "protein_g": 15, "carbs_g": 45, "fat_g": 18},
+  "kadai_paneer":  {"name": "Kadai Paneer",  "serving": "1 bowl (~200 g)",            "kcal": 380, "protein_g": 16, "carbs_g": 12, "fat_g": 30},
+  "kulfi":         {"name": "Kulfi",         "serving": "1 stick (~70 g)",            "kcal": 200, "protein_g": 5,  "carbs_g": 22, "fat_g": 10},
+  "masala_dosa":   {"name": "Masala Dosa",   "serving": "1 dosa with filling",        "kcal": 400, "protein_g": 8,  "carbs_g": 55, "fat_g": 16},
+  "momos":         {"name": "Momos",         "serving": "6 pieces, steamed veg",      "kcal": 250, "protein_g": 8,  "carbs_g": 40, "fat_g": 6},
+  "paani_puri":    {"name": "Paani Puri",    "serving": "6 puris",                    "kcal": 200, "protein_g": 4,  "carbs_g": 30, "fat_g": 7},
+  "pakode":        {"name": "Pakode",        "serving": "~100 g",                     "kcal": 315, "protein_g": 8,  "carbs_g": 30, "fat_g": 18},
+  "pav_bhaji":     {"name": "Pav Bhaji",     "serving": "2 pav + bhaji",              "kcal": 600, "protein_g": 14, "carbs_g": 80, "fat_g": 25},
+  "pizza":         {"name": "Pizza",         "serving": "2 slices (~200 g)",          "kcal": 530, "protein_g": 22, "carbs_g": 66, "fat_g": 20},
+  "samosa":        {"name": "Samosa",        "serving": "1 piece (~100 g)",           "kcal": 260, "protein_g": 4,  "carbs_g": 30, "fat_g": 14}
+}

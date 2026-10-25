@@ -1,0 +1,6 @@
+# Serving dependencies. Install CPU PyTorch first, e.g.:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+pillow>=10.0

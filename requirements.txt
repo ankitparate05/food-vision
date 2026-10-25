@@ -1,0 +1,11 @@
+# Training + experiment tracking (GPU machine, e.g. Kaggle). Includes serving deps.
+-r requirements-api.txt
+torch>=2.2
+torchvision>=0.17
+numpy
+pandas
+scikit-learn
+matplotlib
+seaborn
+mlflow>=2.12
+tqdm

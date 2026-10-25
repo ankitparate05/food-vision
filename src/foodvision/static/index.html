@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Food Vision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fbf7f1; --card: #ffffff; --ink: #2a2118; --muted: #7a6c5d;
+    --line: #ece3d7; --accent: #d9771f; --accent-soft: #fbe9d6; --warn: #b4531c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #1a1511; --card: #241d17; --ink: #f3ebe1; --muted: #b3a491;
+            --line: #3a3027; --accent: #f0943d; --accent-soft: #3a2a1b; --warn: #f2a065; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 16px/1.5 Inter, system-ui, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 40px 16px 64px; }
+  h1 { font-family: Fraunces, Georgia, serif; font-size: clamp(2rem, 6vw, 2.8rem);
+       margin: 0 0 6px; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); margin: 0 0 28px; }
+  .drop { border: 2px dashed var(--line); border-radius: 18px; background: var(--card);
+          padding: 32px 20px; text-align: center; cursor: pointer;
+          transition: border-color .15s, background .15s; }
+  .drop:hover, .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+  .drop strong { color: var(--accent); }
+  .drop small { display: block; color: var(--muted); margin-top: 6px; }
+  input[type=file] { display: none; }
+  .result { display: none; margin-top: 24px; background: var(--card);
+            border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+  .result.show { display: grid; grid-template-columns: 240px 1fr; }
+  @media (max-width: 600px) { .result.show { grid-template-columns: 1fr; } }
+  .result img { width: 100%; height: 100%; max-height: 320px; object-fit: cover; display: block; }
+  .body { padding: 20px 22px; }
+  .top { font-family: Fraunces, Georgia, serif; font-size: 1.7rem; margin: 0; }
+  .conf { color: var(--muted); font-size: .9rem; margin-bottom: 16px; }
+  .msg { background: var(--accent-soft); color: var(--warn); border-radius: 10px;
+         padding: 10px 12px; font-size: .9rem; margin-bottom: 14px; }
+  .row { display: grid; grid-template-columns: 120px 1fr 48px; gap: 10px;
+         align-items: center; font-size: .9rem; margin: 6px 0; }
+  .bar { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .bar span { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+  .pct { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+  .nut { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 18px; }
+  .nut div { background: var(--bg); border-radius: 10px; padding: 8px; text-align: center; }
+  .nut b { display: block; font-size: 1.1rem; font-variant-numeric: tabular-nums; }
+  .nut span { font-size: .75rem; color: var(--muted); }
+  .note { font-size: .75rem; color: var(--muted); margin-top: 10px; }
+  .status { text-align: center; color: var(--muted); margin-top: 16px; min-height: 1.5em; }
+  footer { margin-top: 40px; font-size: .8rem; color: var(--muted); text-align: center; }
+  footer a { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Food Vision</h1>
+  <p class="sub">Upload a photo of an Indian dish. The model recognises 20 dishes and shows approximate nutrition.</p>
+
+  <label class="drop" id="drop">
+    <input type="file" id="file" accept="image/*">
+    <strong>Choose a photo</strong> or drag it here
+    <small>JPG, PNG or WebP, up to 8 MB</small>
+  </label>
+
+  <div class="status" id="status"></div>
+
+  <section class="result" id="result">
+    <img id="preview" alt="Uploaded dish">
+    <div class="body">
+      <p class="top" id="top"></p>
+      <div class="conf" id="conf"></div>
+      <div class="msg" id="msg" hidden></div>
+      <div id="bars"></div>
+      <div class="nut" id="nut"></div>
+      <div class="note" id="note"></div>
+    </div>
+  </section>
+
+  <footer>EfficientNet-B0 fine-tuned on 20 Indian dishes · <a href="/docs">API docs</a></footer>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const drop = $("drop"), input = $("file");
+
+["dragenter", "dragover"].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", ev => ev.dataTransfer.files[0] && classify(ev.dataTransfer.files[0]));
+input.addEventListener("change", () => input.files[0] && classify(input.files[0]));
+
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+async function classify(file) {
+  $("status").textContent = "Classifying…";
+  $("result").classList.remove("show");
+  $("preview").src = URL.createObjectURL(file);
+
+  const form = new FormData();
+  form.append("file", file);
+  try {
+    const res = await fetch("/predict", { method: "POST", body: form });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Request failed");
+    render(data);
+    $("status").textContent = "";
+  } catch (err) {
+    $("status").textContent = "Error: " + err.message;
+  }
+}
+
+function render(data) {
+  const [best] = data.predictions;
+  $("top").textContent = best.name;
+  $("conf").textContent = `${(best.confidence * 100).toFixed(1)}% confident · ${data.latency_ms} ms`;
+  $("msg").hidden = data.confident;
+  $("msg").textContent = data.message || "";
+
+  $("bars").innerHTML = data.predictions.map(p => `
+    <div class="row"><span>${esc(p.name)}</span>
+      <div class="bar"><span style="width:${(p.confidence * 100).toFixed(1)}%"></span></div>
+      <span class="pct">${(p.confidence * 100).toFixed(0)}%</span></div>`).join("");
+
+  const n = best.nutrition;
+  $("nut").innerHTML = n ? [["kcal", "kcal"], ["protein_g", "protein g"], ["carbs_g", "carbs g"], ["fat_g", "fat g"]]
+    .map(([k, label]) => `<div><b>${esc(n[k])}</b><span>${label}</span></div>`).join("") : "";
+  $("note").textContent = n ? `Per ${n.serving}. ${data.nutrition_disclaimer}` : "";
+  $("result").classList.add("show");
+}
+</script>
+</body>
+</html>
