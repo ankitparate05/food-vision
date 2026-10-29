@@ -1,6 +1,8 @@
 # 🍛 Food Vision: Indian Dish Classifier with an MLOps Pipeline
 
-[![CI](https://github.com/ankitparate05/food-vision/actions/workflows/ci.yml/badge.svg)](https://github.com/ankitparate05/food-vision/actions/workflows/ci.yml)
+[![CI](https://github.com/ankitparate05/food-vision/actions/workflows/ci.yml/badge.svg)](https://github.com/ankitparate05/food-vision/actions/workflows/ci.yml) [![Live demo](https://img.shields.io/badge/%F0%9F%A4%97%20Live%20demo-Hugging%20Face-yellow)](https://huggingface.co/spaces/Ankitparate/food-vision)
+
+**▶ Try it live:** [huggingface.co/spaces/Ankitparate/food-vision](https://huggingface.co/spaces/Ankitparate/food-vision): upload a food photo, get the dish and its nutrition.
 
 Upload a photo of an Indian dish → get the **top-3 predicted dishes** with confidence and **approximate nutrition**.
 The best model, a fine-tuned **ConvNeXt-Tiny**, recognises **20 dishes** with **94.3% top-1 / 98.8% top-3 accuracy** on a de-duplicated test set. Served by a **FastAPI** service in **Docker**, tested in **GitHub Actions CI**.
@@ -188,7 +190,7 @@ pip install -r requirements-dev.txt && pytest
 - [x] **Step 1:** baseline EfficientNet-B0 (93.5% top-1)
 - [x] Packaged training code, FastAPI service, Docker image, tests, CI
 - [x] **Step 2:** duplicate-leakage audit + MLflow comparison: ConvNeXt-Tiny wins (94.3% top-1 on clean test set)
-- [ ] **Step 3:** deploy to Hugging Face Spaces (public demo link)
+- [x] **Step 3:** deployed to [Hugging Face Spaces](https://huggingface.co/spaces/Ankitparate/food-vision) (Gradio demo, EfficientNet-B0)
 
 ## Limitations
 
