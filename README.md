@@ -3,13 +3,46 @@
 [![CI](https://github.com/ankitparate05/food-vision/actions/workflows/ci.yml/badge.svg)](https://github.com/ankitparate05/food-vision/actions/workflows/ci.yml)
 
 Upload a photo of an Indian dish → get the **top-3 predicted dishes** with confidence and **approximate nutrition**.
-A fine-tuned **EfficientNet-B0** recognises **20 dishes** with **93.5% top-1 / 97.5% top-3 accuracy**, served by a **FastAPI** service in **Docker**, tested in **GitHub Actions CI**.
+The best model, a fine-tuned **ConvNeXt-Tiny**, recognises **20 dishes** with **94.3% top-1 / 98.8% top-3 accuracy** on a de-duplicated test set. Served by a **FastAPI** service in **Docker**, tested in **GitHub Actions CI**.
 
 The focus is not just the model but the engineering around it: versioned data splits, a data-leakage check, experiment tracking, one shared preprocessing path for training and serving, and automated tests.
 
 ---
 
-## Results (baseline: EfficientNet-B0)
+## Results
+
+### Final comparison (clean test set, duplicates removed)
+
+All runs use the same versioned splits, seed and epochs (3 head + 7 fine-tune), tracked in MLflow. The winner is chosen by **validation** accuracy; test is reported once.
+
+| Run | Model | Augmentation | Val acc | Test acc | Test top-3 | Test macro-F1 | Params |
+|---|---|---|---|---|---|---|---|
+| **C** | **ConvNeXt-Tiny** | strong | **92.2%** | **94.3%** | **98.8%** | **0.945** | 27.8M |
+| A | EfficientNet-B0 | basic | 90.4% | 93.3% | 97.8% | 0.935 | 4.0M |
+| B | EfficientNet-B0 | strong | 90.5% | 92.5% | 97.9% | 0.925 | 4.0M |
+
+**Findings**
+- **ConvNeXt-Tiny wins on every metric** (+1.8 pts validation, +1.0 pt test over the baseline), at 7x the parameters (~110 MB vs 16 MB).
+- **Stronger augmentation (TrivialAugment + RandomErasing) did not help EfficientNet-B0**: validation was flat (90.4 to 90.5%). The bottleneck was model capacity, not just overfitting.
+- ConvNeXt trained as fast as EfficientNet (~14 min each on a T4) despite its size: training was **data-loading (CPU) bound**, not GPU bound.
+
+Raw numbers: [`reports/experiments/experiments_summary.csv`](reports/experiments/experiments_summary.csv)
+
+### Data-leakage audit
+
+The dataset is web-scraped, so every image was hashed with a 64-bit perceptual hash (dHash); pairs differing in 4 bits or fewer are near-duplicates (resized / re-compressed copies).
+
+| Finding | Count |
+|---|---|
+| Near-duplicate pairs | 96 |
+| Test images with a copy in **train** | 25 |
+| Val images with a copy in train | 12 |
+| Same photo with **two different labels** | 1 |
+| Val/test images removed before the experiments | 39 (27 from test) |
+
+Re-training the baseline on the cleaned splits gave **93.3%** vs **93.5%** before: the leak inflated the original score by only ~0.2 pts, so the baseline result holds up. Details: [`reports/experiments/duplicates_summary.json`](reports/experiments/duplicates_summary.json)
+
+### Step 1 baseline (EfficientNet-B0, before the audit)
 
 Evaluated once on a held-out test set of **941 images** (15% stratified split, never used for training or model selection).
 
@@ -45,8 +78,7 @@ Errors cluster in **visually similar food groups** (gravies, flatbreads), not at
 
 **Honest caveats**
 - Test accuracy (93.5%) is ~3 points above validation (90.7%). With ~940 images per split, part of that is split noise, so the realistic range is **~91–93%**.
-- Train accuracy reaches 99% while validation plateaus at ~91%: the model **overfits**. Step 2 tests stronger augmentation and a larger backbone against this.
-- The dataset is web-scraped, so duplicate photos may cross splits. `scripts/check_duplicates.py` measures this (Step 2).
+- Train accuracy reaches 99% while validation plateaus at ~91%: the model **overfits**. Step 2 tested stronger augmentation and a larger backbone against this (see the comparison above).
 
 ---
 
@@ -97,9 +129,11 @@ food-vision/
 │   └── make_dummy_artifacts.py
 ├── notebooks/
 │   ├── 01_baseline_training.ipynb    # Step 1: baseline (results above)
-│   └── 02_experiments_kaggle.ipynb   # Step 2: leakage check + tracked experiments
+│   └── 02_experiments_kaggle.ipynb   # Step 2: leakage audit + tracked experiments (self-contained)
 ├── data/splits/           # versioned train/val/test lists
-├── reports/baseline/      # metrics, history, figures
+├── reports/
+│   ├── baseline/          # Step 1 metrics, history, figures
+│   └── experiments/       # Step 2 comparison + leakage audit results
 ├── tests/
 ├── Dockerfile
 └── .github/workflows/ci.yml
@@ -153,7 +187,7 @@ pip install -r requirements-dev.txt && pytest
 
 - [x] **Step 1:** baseline EfficientNet-B0 (93.5% top-1)
 - [x] Packaged training code, FastAPI service, Docker image, tests, CI
-- [ ] **Step 2:** duplicate-leakage audit + MLflow comparison: EfficientNet-B0 (basic vs strong augmentation) vs ConvNeXt-Tiny
+- [x] **Step 2:** duplicate-leakage audit + MLflow comparison: ConvNeXt-Tiny wins (94.3% top-1 on clean test set)
 - [ ] **Step 3:** deploy to Hugging Face Spaces (public demo link)
 
 ## Limitations

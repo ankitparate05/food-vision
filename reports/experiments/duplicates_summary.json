@@ -1,0 +1,9 @@
+{
+  "images": 6269,
+  "threshold_bits": 4,
+  "duplicate_pairs": 96,
+  "pairs_by_split": {"train-train": 55, "test-train": 25, "train-val": 12, "test-val": 2, "val-val": 1, "test-test": 1},
+  "label_conflicts": 1,
+  "val_test_images_to_exclude": 39,
+  "test_images_leaking": 27
+}
